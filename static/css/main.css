@@ -1,0 +1,11 @@
+.jumbotron {
+    background-color: deepskyblue;
+    color: white;
+    padding: 100px 25px;
+}
+
+.jumbotron-small {
+    background-color: deepskyblue;
+    color: white;
+    padding: 50px 25px;
+}
