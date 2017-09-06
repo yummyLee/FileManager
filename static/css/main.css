@@ -10,14 +10,22 @@
     padding: 50px 25px;
 }
 
-.dir-file{
-    background-color: yellow;
+.dir-file {
+    background-color: coral;
 }
 
-.disk-file{
+.dir-file:hover {
+    background-color: chocolate;
+}
+
+.disk-file {
     background-color: grey;
 }
 
-.target-dir{
+.disk-file:hover {
+    background-color: #464a4e;
+}
+
+.target-dir {
     background-color: deepskyblue;
 }

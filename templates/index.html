@@ -11,22 +11,22 @@
     <link rel="stylesheet" type="text/css" href="{{static_url('css/toastr.css')}}"/>
     <script type="text/javascript" src="{{static_url('js/jquery-1.7.2.min.js')}}"></script>
     <script type="text/javascript" src="{{static_url('js/toastr.js')}}"></script>
-    <script type="text/javascript">
-        $(function () {
-            $('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');
-            $('.tree li.parent_li > span').on('click', function (e) {
-                var children = $(this).parent('li.parent_li').find(' > ul > li');
-                if (children.is(":visible")) {
-                    children.hide('fast');
-                    $(this).attr('title', 'Expand this branch').find(' > i').addClass('glyphicons glyphicons-plus').removeClass('glyphicons glyphicons-minus');
-                } else {
-                    children.show('fast');
-                    $(this).attr('title', 'Collapse this branch').find(' > i').addClass('glyphicons glyphicons-minus').removeClass('glyphicons glyphicons-plus');
-                }
-                e.stopPropagation();
-            });
-        });
-    </script>
+    <!--<script type="text/javascript">-->
+    <!--$(function () {-->
+    <!--$('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');-->
+    <!--$('.tree li.parent_li > span').on('click', function (e) {-->
+    <!--var children = $(this).parent('li.parent_li').find(' > ul > li');-->
+    <!--if (children.is(":visible")) {-->
+    <!--children.hide('fast');-->
+    <!--$(this).attr('title', 'Expand this branch').find(' > i').addClass('glyphicons glyphicons-plus').removeClass('glyphicons glyphicons-minus');-->
+    <!--} else {-->
+    <!--children.show('fast');-->
+    <!--$(this).attr('title', 'Collapse this branch').find(' > i').addClass('glyphicons glyphicons-minus').removeClass('glyphicons glyphicons-plus');-->
+    <!--}-->
+    <!--e.stopPropagation();-->
+    <!--});-->
+    <!--});-->
+    <!--</script>-->
 </head>
 
 <body>
@@ -39,15 +39,15 @@
     </form>
 </div>
 
-<div class="container-fluid tree">
+<div class="container-fluid">
     <div class="row">
-        <div class="col-lg-6">
+        <div class="col-lg-6 tree">
             <h2>文件查看：</h2>
             <ul id="fileTree">
 
             </ul>
         </div>
-        <div id="result-tree" class="col-lg-6">
+        <div id="result-tree" class="col-lg-6 tree">
             <h2>查询结果：</h2>
         </div>
     </div>
@@ -79,8 +79,22 @@
                         "</a>" +
                         "</li>")
                 }
+                var children = $("#fileTree").find(' > li');
+                children.css("display", "none");
+                children.show('fast');
+                children.css("overflow", "visible");
                 $('.dir-file-level-0').click(function () {
-                        getChildren($(this).parent(), $(this).attr("title"), 0);
+                        var children = $(this).parent().find(' > ul > li ');
+                        if (children.length > 0) {
+                            if (children.is(":visible")) {
+                                children.hide('fast');
+                            } else {
+                                children.show('fast');
+                                children.css("overflow", "visible");
+                            }
+                        } else {
+                            getChildren($(this).parent(), $(this).attr("title"), 0);
+                        }
                     }
                 )
             }
@@ -104,6 +118,7 @@
                     toastr.warning("该目录为空。。")
                 }
                 li_parent.append("<ul class='ul-open'>");
+                li_parent.addClass("parent_li");
                 var ul_parent = li_parent.children("ul");
                 console.log("got response");
                 for (var i = 0; i < getJsonLength(dir_info); i++) {
@@ -133,9 +148,23 @@
                     //console.log(dir_info[i].fileName);
                 }
                 li_parent.append("</ul>");
+                var children = li_parent.find(' > ul > li');
+                children.css("display", "none");
+                children.show('fast');
+                children.css("overflow", "visible");
                 $('.dir-file-level-' + (cur_level + 1)).click(function () {
-                    console.log("set children dir on click");
-                    getChildren($(this).parent(), $(this).attr("title"), cur_level + 1);
+//                    console.log("set children dir on click");
+                    var children = $(this).parent().find(' > ul > li ');
+                    if (children.length > 0) {
+                        if (children.is(":visible")) {
+                            children.hide('fast');
+                        } else {
+                            children.show('fast');
+                            children.css("overflow", "visible");
+                        }
+                    } else {
+                        getChildren($(this).parent(), $(this).attr("title"), cur_level + 1);
+                    }
                 })
             }
         };
