@@ -9,3 +9,15 @@
     color: white;
     padding: 50px 25px;
 }
+
+.dir-file{
+    background-color: yellow;
+}
+
+.disk-file{
+    background-color: grey;
+}
+
+.target-dir{
+    background-color: deepskyblue;
+}

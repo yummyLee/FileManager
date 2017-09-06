@@ -8,7 +8,9 @@
     <!--主要样式-->
     <link rel="stylesheet" type="text/css" href="{{static_url('css/style.css')}}"/>
     <link rel="stylesheet" type="text/css" href="{{static_url('css/main.css')}}"/>
+    <link rel="stylesheet" type="text/css" href="{{static_url('css/toastr.css')}}"/>
     <script type="text/javascript" src="{{static_url('js/jquery-1.7.2.min.js')}}"></script>
+    <script type="text/javascript" src="{{static_url('js/toastr.js')}}"></script>
     <script type="text/javascript">
         $(function () {
             $('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');
@@ -32,16 +34,23 @@
 <div class="jumbotron jumbotron-small">
     <h1>目录查询系统</h1>
     <form class="form-inline search-bar">
-        <input type="search" class="form-control" size="50" placeholder="需要搜索的内容…">
-        <button type="button" class="btn btn-info">搜索</button>
+        <input id="search-content" type="search" class="form-control" size="50" placeholder="需要搜索的内容…">
+        <button id="search-button" type="button" class="btn btn-info">搜索</button>
     </form>
 </div>
 
-<div class="tree">
-    <ul id="fileTree">
+<div class="container-fluid tree">
+    <div class="row">
+        <div class="col-lg-6">
+            <h2>文件查看：</h2>
+            <ul id="fileTree">
 
-    </ul>
-
+            </ul>
+        </div>
+        <div id="result-tree" class="col-lg-6">
+            <h2>查询结果：</h2>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -62,7 +71,7 @@
                 for (var i = 0; i < getJsonLength(disk_info); i++) {
                     console.log(disk_info[i].Caption);
                     $("#fileTree").append("<li>" +
-                        "<a class='dir-file' title='" + disk_info[i].Caption + "'>" +
+                        "<a class='disk-file dir-file-level-0' title='" + disk_info[i].Caption + "'>" +
                         "<span>" +
                         "<i class=\"icon-folder-open\"></i>"
                         + disk_info[i].Caption +
@@ -70,8 +79,8 @@
                         "</a>" +
                         "</li>")
                 }
-                $('.dir-file').click(function () {
-                        getChildren($(this).parent(), $(this).attr("title"));
+                $('.dir-file-level-0').click(function () {
+                        getChildren($(this).parent(), $(this).attr("title"), 0);
                     }
                 )
             }
@@ -80,7 +89,7 @@
         x.send();
     }
 
-    function getChildren(l, p) {
+    function getChildren(l, p, cur_level) {
         console.log(p);
         var li_parent = l;
         var path = p;
@@ -91,16 +100,21 @@
         x.onreadystatechange = function () {
             if (x.readyState === 4 && x.status === 200) {
                 var dir_info = eval("(" + x.responseText + ")");
+                if (getJsonLength(dir_info) === 0) {
+                    toastr.warning("该目录为空。。")
+                }
                 li_parent.append("<ul class='ul-open'>");
                 var ul_parent = li_parent.children("ul");
                 console.log("got response");
                 for (var i = 0; i < getJsonLength(dir_info); i++) {
-                    if (dir_info[0].fileType === "dir") {
+                    if (dir_info[i].fileType === "dir") {
                         ul_parent.append("<li>" +
-                            "<a class='dir-file' title='" + path + "\\" + dir_info[i].fileName + "'>" +
+                            "<a class=\"dir-file dir-file-level-" +
+                            (cur_level + 1) +
+                            "\" title='" + path + "\\" + dir_info[i].fileName + "'>" +
                             "<span>" +
-                            "<i class=\"icon-folder-open\"></i>"
-                            + dir_info[i].fileName +
+                            "<i class=\"icon-folder-open\"></i>" +
+                            dir_info[i].fileName +
                             "</span>" +
                             "</a>" +
                             "</li>"
@@ -119,14 +133,79 @@
                     //console.log(dir_info[i].fileName);
                 }
                 li_parent.append("</ul>");
-                $('.dir-file').click(function () {
+                $('.dir-file-level-' + (cur_level + 1)).click(function () {
                     console.log("set children dir on click");
-                    getChildren($(this).parent(), $(this).attr("title"));
+                    getChildren($(this).parent(), $(this).attr("title"), cur_level + 1);
                 })
             }
         };
         x.open("GET", "?param=dir_info&path=" + path, true);
         x.send();
+    }
+
+    $("#search-button").click(function () {
+        searchPath($("#search-content").val());
+    });
+
+    function searchPath(path) {
+        $("#result-tree").empty();
+        var path_segment = path.split("\\");
+//        console.log(path_segment);
+        var x = new XMLHttpRequest();
+        var parent = $("#result-tree");
+
+        x.onreadystatechange = function () {
+            if (x.readyState === 4 && x.status === 200) {
+                console.log(x.responseText);
+                var results = eval("(" + x.responseText + ")");
+                if (getJsonLength(results) === 0) {
+                    toastr.error("查询失败，目标路径不存在。。");
+                    return;
+                }
+                parent.innerHTML = "";
+                var htmls;
+                htmls = "<ul>" +
+                    "<li>" +
+                    "<a title=\"" + results[0].file_path + "\" class='target-dir'>" +
+                    "<span>" +
+                    "<i class=\"icon-folder-open\"></i>" +
+                    results[0].file_name +
+                    "</span>" +
+                    "</a>" +
+                    "<ul>";
+                for (var i = 0; i < getJsonLength(results); i++) {
+
+                    var files_array = results[i].dir_files;
+                    if (files_array === "final") {
+                        toastr.success("查询成功。。");
+                        return;
+                    }
+                    console.log(files_array);
+                    var path = results[i].file_path;
+                    for (var j = 0; j < files_array.length; j++) {
+                        if (path_segment[i + 1] === files_array[j]) {
+                            htmls += "<li id=target-dir-" + (i + 1) + ">" + "<a title='" + path + files_array[j] + "' class='target-dir'>";
+                        } else {
+                            console.log(path_segment[i + 1] + "---" + files_array[j]);
+                            htmls += "<li>" + "<a title='" + path + files_array[j] + "'>";
+                        }
+                        htmls += "<span>" +
+                            "<i class=\"icon-folder-open\"></i>" +
+                            files_array[j] +
+                            "</span>" +
+                            "</a>" +
+                            "</li>";
+                    }
+                    htmls += "</ul>" + "</li>";
+                    parent.append(htmls);
+                    parent = $("#target-dir-" + (i + 1));
+                    htmls = "<ul>";
+                }
+                toastr.success("查询成功。。");
+            }
+        };
+        x.open("GET", "?param=find&path=" + path, true);
+        x.send()
     }
 
     $(document).ready(function () {
