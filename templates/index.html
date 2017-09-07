@@ -2,31 +2,19 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>jquery实现多级树形分类可折叠菜单特效代码</title>
     <!--图标样式-->
-    <link rel="stylesheet" type="text/css" href="{{static_url('css/bootstrap.min.css')}}"/>
+    <link rel="stylesheet" type="text/css" href="{{static_url('css/bootstrap.css')}}"/>
     <!--主要样式-->
     <link rel="stylesheet" type="text/css" href="{{static_url('css/style.css')}}"/>
     <link rel="stylesheet" type="text/css" href="{{static_url('css/main.css')}}"/>
     <link rel="stylesheet" type="text/css" href="{{static_url('css/toastr.css')}}"/>
-    <script type="text/javascript" src="{{static_url('js/jquery-1.7.2.min.js')}}"></script>
+    <script type="text/javascript" src="{{static_url('js/jquery-3.2.1.js')}}"></script>
+    <!--<script src="https://ajax.googleapis.bootcss.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>-->
     <script type="text/javascript" src="{{static_url('js/toastr.js')}}"></script>
-    <!--<script type="text/javascript">-->
-    <!--$(function () {-->
-    <!--$('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');-->
-    <!--$('.tree li.parent_li > span').on('click', function (e) {-->
-    <!--var children = $(this).parent('li.parent_li').find(' > ul > li');-->
-    <!--if (children.is(":visible")) {-->
-    <!--children.hide('fast');-->
-    <!--$(this).attr('title', 'Expand this branch').find(' > i').addClass('glyphicons glyphicons-plus').removeClass('glyphicons glyphicons-minus');-->
-    <!--} else {-->
-    <!--children.show('fast');-->
-    <!--$(this).attr('title', 'Collapse this branch').find(' > i').addClass('glyphicons glyphicons-minus').removeClass('glyphicons glyphicons-plus');-->
-    <!--}-->
-    <!--e.stopPropagation();-->
-    <!--});-->
-    <!--});-->
-    <!--</script>-->
+    <script type="text/javascript" src="{{static_url('js/bootstrap.js')}}"></script>
+    <script type="text/javascript" src="{{static_url('js/clipboard.min.js')}}"></script>
 </head>
 
 <body>
@@ -47,9 +35,17 @@
 
             </ul>
         </div>
-        <div id="result-tree" class="col-lg-6 tree">
+        <div class="col-lg-6 tree">
             <h2>查询结果：</h2>
+            <ul id="result_menu" class="nav nav-tabs">
+
+            </ul>
+
+            <div id="result_list" class="tab-content">
+
+            </div>
         </div>
+
     </div>
 </div>
 
@@ -77,7 +73,8 @@
                         + disk_info[i].Caption +
                         "</span>" +
                         "</a>" +
-                        "</li>")
+                        "<a class='copy-path copy-path-0' data-clipboard-text='" + disk_info[i].Caption + "'>copy</a>" +
+                        "</li>");
                 }
                 var children = $("#fileTree").find(' > li');
                 children.css("display", "none");
@@ -96,7 +93,18 @@
                             getChildren($(this).parent(), $(this).attr("title"), 0);
                         }
                     }
-                )
+                );
+                var clipboard = new Clipboard('.copy-path-0');//实例化
+                //复制成功执行的回调，可选
+                clipboard.on('success', function (e) {
+                    console.log(e);
+                    toastr.error("复制成功。。");
+                });
+                //复制失败执行的回调，可选
+                clipboard.on('error', function (e) {
+                    console.log(e);
+                    toastr.error("复制失败。。");
+                });
             }
         };
         x.open("GET", "?param=disk_info", true);
@@ -107,7 +115,7 @@
         console.log(p);
         var li_parent = l;
         var path = p;
-        if (li_parent.children().length > 1) {
+        if (li_parent.children().length > 2) {
             return;
         }
         var x = new XMLHttpRequest();
@@ -132,6 +140,7 @@
                             dir_info[i].fileName +
                             "</span>" +
                             "</a>" +
+                            "<a class='copy-path copy-path-" + (cur_level + 1) + "' data-clipboard-text='" + path + "\\" + dir_info[i].fileName + "'>copy</a>" +
                             "</li>"
                         );
                     } else {
@@ -142,6 +151,7 @@
                             dir_info[i].fileName +
                             "</span>" +
                             "</a>" +
+                            "<a class='copy-path copy-path-" + (cur_level + 1) + "' data-clipboard-text='" + path + "\\" + dir_info[i].fileName + "'>copy</a>" +
                             "</li>"
                         );
                     }
@@ -152,7 +162,8 @@
                 children.css("display", "none");
                 children.show('fast');
                 children.css("overflow", "visible");
-                $('.dir-file-level-' + (cur_level + 1)).click(function () {
+                var dir_file_level = $('.dir-file-level-' + (cur_level + 1));
+                dir_file_level.click(function () {
 //                    console.log("set children dir on click");
                     var children = $(this).parent().find(' > ul > li ');
                     if (children.length > 0) {
@@ -165,7 +176,18 @@
                     } else {
                         getChildren($(this).parent(), $(this).attr("title"), cur_level + 1);
                     }
-                })
+                });
+                var clipboard = new Clipboard(".copy-path-" + (cur_level + 1));//实例化
+                //复制成功执行的回调，可选
+                clipboard.on('success', function (e) {
+                    console.log(e);
+                    toastr.success("复制成功。。");
+                });
+                //复制失败执行的回调，可选
+                clipboard.on('error', function (e) {
+                    console.log(e);
+                    toastr.error("复制失败。。");
+                });
             }
         };
         x.open("GET", "?param=dir_info&path=" + path, true);
@@ -176,24 +198,32 @@
         searchPath($("#search-content").val());
     });
 
+    var SEARCH_COUNT = 0;
+
     function searchPath(path) {
         $("#result-tree").empty();
         var path_segment = path.split("\\");
-//        console.log(path_segment);
+        console.log(path_segment);
         var x = new XMLHttpRequest();
-        var parent = $("#result-tree");
+        var parent = $("#result_list");
+//        var parent = $("#result-tree");
+        var menu_parent = $("#result_menu");
 
         x.onreadystatechange = function () {
             if (x.readyState === 4 && x.status === 200) {
-                console.log(x.responseText);
+//                console.log(x.responseText);
                 var results = eval("(" + x.responseText + ")");
                 if (getJsonLength(results) === 0) {
                     toastr.error("查询失败，目标路径不存在。。");
                     return;
                 }
-                parent.innerHTML = "";
-                var htmls;
-                htmls = "<ul>" +
+                menu_parent.find(" > li").removeClass("active");
+                menu_parent.append("<li class=\"active\"><a data-toggle=\"tab\" href=\"#result" + SEARCH_COUNT + "\">结果" + SEARCH_COUNT + "</a></li>");
+
+                var htmls = "";
+                htmls += "<div id=\"result" + SEARCH_COUNT + "\" class=\"tab-pane fade in active\">";
+
+                htmls += "<ul>" +
                     "<li>" +
                     "<a title=\"" + results[0].file_path + "\" class='target-dir'>" +
                     "<span>" +
@@ -207,15 +237,16 @@
                     var files_array = results[i].dir_files;
                     if (files_array === "final") {
                         toastr.success("查询成功。。");
+                        SEARCH_COUNT++;
                         return;
                     }
                     console.log(files_array);
                     var path = results[i].file_path;
                     for (var j = 0; j < files_array.length; j++) {
                         if (path_segment[i + 1] === files_array[j]) {
-                            htmls += "<li id=target-dir-" + (i + 1) + ">" + "<a title='" + path + files_array[j] + "' class='target-dir'>";
+                            htmls += "<li id=target-dir-" + SEARCH_COUNT + "-" + (i + 1) + ">" + "<a title='" + path + files_array[j] + "' class='target-dir'>";
                         } else {
-                            console.log(path_segment[i + 1] + "---" + files_array[j]);
+//                            console.log(path_segment[i + 1] + "---" + files_array[j]);
                             htmls += "<li>" + "<a title='" + path + files_array[j] + "'>";
                         }
                         htmls += "<span>" +
@@ -226,11 +257,13 @@
                             "</li>";
                     }
                     htmls += "</ul>" + "</li>";
+                    parent.find(">div").removeClass("active");
                     parent.append(htmls);
-                    parent = $("#target-dir-" + (i + 1));
-                    htmls = "<ul>";
+                    parent = $("#target-dir-" + SEARCH_COUNT + "-" + (i + 1));
+                    htmls = "<ul>" + "</div>";
                 }
                 toastr.success("查询成功。。");
+                SEARCH_COUNT++;
             }
         };
         x.open("GET", "?param=find&path=" + path, true);

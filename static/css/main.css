@@ -29,3 +29,21 @@
 .target-dir {
     background-color: deepskyblue;
 }
+
+body a {
+    color: #333;
+}
+
+body a:hover {
+    color: black;
+}
+
+.copy-path {
+    color: deepskyblue;
+    margin-left: 3px;
+    text-decoration: none;
+}
+
+.copy-path:hover {
+    color: dodgerblue;
+}
