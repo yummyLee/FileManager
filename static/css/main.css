@@ -1,3 +1,9 @@
+.bg {
+    background-color: deepskyblue;
+    padding-left: 15px;
+    padding-right: 10px;
+}
+
 .jumbotron {
     background-color: deepskyblue;
     color: white;
@@ -8,6 +14,11 @@
     background-color: deepskyblue;
     color: white;
     padding: 50px 25px;
+}
+
+.module {
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .dir-file {
@@ -46,4 +57,13 @@ body a:hover {
 
 .copy-path:hover {
     color: dodgerblue;
+}
+
+.my-footer {
+    margin-bottom: 20px;
+    color: white;
+}
+
+.to-top-icon{
+    color: white;
 }

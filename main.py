@@ -9,7 +9,7 @@ from tornado.options import define, options
 
 import get_disk_info
 
-define("port", default=8007, help="help", type=int)
+define("port", default=8008, help="help", type=int)
 
 
 class MainHandler(tornado.web.RequestHandler):

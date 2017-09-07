@@ -17,7 +17,7 @@
     <script type="text/javascript" src="{{static_url('js/clipboard.min.js')}}"></script>
 </head>
 
-<body>
+<body id="mySystem" class="bg">
 
 <div class="jumbotron jumbotron-small">
     <h1>目录查询系统</h1>
@@ -29,25 +29,40 @@
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-lg-6 tree">
-            <h2>文件查看：</h2>
-            <ul id="fileTree">
+        <div class="col-lg-6 module">
+            <div class="tree thumbnail">
+                <h2>文件查看：</h2>
+                <ul id="fileTree">
 
-            </ul>
+                </ul>
+            </div>
         </div>
-        <div class="col-lg-6 tree">
-            <h2>查询结果：</h2>
-            <ul id="result_menu" class="nav nav-tabs">
+        <div class="col-lg-6 module">
+            <div class="tree thumbnail">
+                <h2>查询结果：</h2>
+                <ul id="result_menu" class="nav nav-tabs">
 
-            </ul>
+                </ul>
 
-            <div id="result_list" class="tab-content">
+                <div id="result_list" class="tab-content">
 
+                </div>
             </div>
         </div>
 
     </div>
 </div>
+
+<footer class="container-fluid text-center my-footer">
+    <div class="row">
+        <a href="#mySystem" class="col-lg-12" title="To Top">
+            <span class="glyphicon glyphicon-chevron-up to-top-icon"></span>
+        </a>
+    </div>
+    <p>Presented by
+        <span title="Yummy">Yummy</span>
+    </p>
+</footer>
 
 <script>
 
